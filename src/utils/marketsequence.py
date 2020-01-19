@@ -5,7 +5,7 @@ import numpy as np
 import json
 
 class MarketSequence(Sequence):
-    def __init__(self, market_path, batch_size, preprocess=None, resize=None, train=True):
+    def __init__(self, market_path, batch_size, preprocess=None, train=True):
         self.batch_size = batch_size
         self.f = File(market_path, "r")
         if train:
@@ -15,17 +15,24 @@ class MarketSequence(Sequence):
             self.x = self.f["test_images"]
             self.y = self.f["test_labels"]
 
+        if isinstance(preprocess, tuple):
+            assert len(preprocess) == 2
+            self.preprocess_input, self.preprocess_output = preprocess
+
         assert len(self.x) == len(self.y)
 
     def __len__(self):
-        return len(self.x)
+        return len(self.x) // self.batch_size
 
     def __getitem__(self, index):
-        # TODO: preprocess and resize
-        return (
-            self.x[self.batch_size * index:self.batch_size * (index + 1)],
-            self.y[self.batch_size * index:self.batch_size * (index + 1)]
-        )
+        x = np.array(self.x[self.batch_size * index:self.batch_size * (index + 1)])
+        y = np.array(self.y[self.batch_size * index:self.batch_size * (index + 1)])
+        # print(x)
+        if hasattr(self, "preprocess_input"):
+            x = self.preprocess_input(x)
+        if hasattr(self, "preprocess_output"):
+            y = self.preprocess_output(y)
+        return x, y
 
 
 if __name__ == "__main__":
@@ -38,9 +45,10 @@ if __name__ == "__main__":
     assert y.shape[0] == 32, "Batch size"
     assert len(x.shape[1:]) == 3, "RGB images"
     assert y.shape[1] == 27, "Number of attributes"
-
-    ms = MarketSequence("market.h5", 16, train=True)
-    batch = ms[0]
+    def i(a):
+        return a
+    ms = MarketSequence("market.h5", 16, train=True, preprocess=(i, i))
+    batch = ms[2]
     x, y = batch
     assert x.shape[0] == 16, "Batch size"
     assert y.shape[0] == 16, "Batch size"

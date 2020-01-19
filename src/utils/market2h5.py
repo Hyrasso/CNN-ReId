@@ -2,12 +2,16 @@ import h5py
 from keras.preprocessing.image import load_img, img_to_array
 import json
 from pathlib import Path
+from typing import Union
 import time
 import numpy as np
 
 MARKET_IMAGE_DIMS = (128, 64, 3) # height x width x channels
 LABEL_DIM = 27
-def market_to_h5(folder: str, attribute: str, destination: str):
+def market_to_h5(
+    folder: Union[str, Path], 
+    attribute: Union[str, Path], 
+    destination: Union[str, Path]):
     """Create an hdf5 file from image folder and JSON labels file
     
     The HDF5 file contains 4 datasets at the root:
@@ -33,18 +37,29 @@ def market_to_h5(folder: str, attribute: str, destination: str):
             print("Processing", split_name, "data")
 
             images = [f for f in folder.glob(f"*.jpg") if f.name[:4] in split["image_index"]]
+            
+            xds = hf.create_dataset(f"{split_name}_images", (len(images), *MARKET_IMAGE_DIMS), chunks=(32, *MARKET_IMAGE_DIMS), compression="gzip")
+            # save image files names in a dataset, to keep ids 
+            # h5py.special_dtype(vlen=str) to store unicode utf8 encoded
+            ds_files_name = f"{split_name}_images_files"
+            hf.create_dataset(
+                ds_files_name, 
+                dtype=h5py.special_dtype(vlen=str), 
+                data=[bytes(image.name, "utf-8") for image in images])
+            xds.attrs["files"] = ds_files_name
 
-            xds = hf.create_dataset(f"{split_name}_images", (len(images), *MARKET_IMAGE_DIMS))
             yds = hf.create_dataset(f"{split_name}_labels", (len(images), LABEL_DIM))
+            # save attributes names in labels attr
+            yds.attrs["labels"] = attrs
             for j, image in enumerate(images):
+                # progress display
                 if j%10==0:print("\r",round(j / len(images) * 100), "%", end=" ")
+
                 idx = split["image_index"].index(image.name[:4])
-                # no resize/preprocessing, 
-                # image data is written as it is given by keras preprocessing functions
+                # image data is written as it is given by keras image loading functions
                 im = img_to_array(load_img(image))
                 xds[j] = im
                 yds[j] = np.array([split[attr][idx] for attr in attrs])
-                yds.attrs["labels"] = attrs
             print()
     print(f"HDF5 file created at {destination} in {round(time.time() - start)} sec")
 
