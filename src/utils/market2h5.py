@@ -38,7 +38,7 @@ def market_to_h5(
 
             images = [f for f in folder.glob(f"*.jpg") if f.name[:4] in split["image_index"]]
             
-            xds = hf.create_dataset(f"{split_name}_images", (len(images), *MARKET_IMAGE_DIMS), chunks=(32, *MARKET_IMAGE_DIMS), compression="gzip")
+            xds = hf.create_dataset(f"{split_name}_images", (len(images), *MARKET_IMAGE_DIMS), chunks=(32, *MARKET_IMAGE_DIMS))
             # save image files names in a dataset, to keep ids 
             # h5py.special_dtype(vlen=str) to store unicode utf8 encoded
             ds_files_name = f"{split_name}_images_files"
