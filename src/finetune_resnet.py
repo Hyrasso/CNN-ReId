@@ -54,10 +54,9 @@ train_ms = MarketSequence("market.h5", 32, preprocess=(resize_preprocess, prepro
 model = get_model(n_classes=26)
 model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
 # model.summary()
-test_ms = MarketSequence("market.h5", 32, train=False, preprocess=(resize_preprocess, preprocess_labels))
-hist = model.fit_generator(train_ms, validation_data=test_ms, epochs=10)
+test_ms = MarketSequence("market.h5", 1024, train=False, preprocess=(resize_preprocess, preprocess_labels))
+hist = model.fit_generator(train_ms, epochs=5)
 # model.fit(*train_ms[0], batch_size=16)
 # print(model.evaluate(*test_ms[0]))
 print(hist.history)
 model.save("model_attr.h5")
-
