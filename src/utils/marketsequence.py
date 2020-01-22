@@ -4,7 +4,7 @@ from keras.utils import Sequence
 import numpy as np
 import json
 
-class MarketSequence(Sequence):
+class MarketSequence():
     def __init__(self, market_path, batch_size, preprocess=None, train=True):
         self.batch_size = batch_size
         self.f = File(market_path, "r")
@@ -45,9 +45,11 @@ if __name__ == "__main__":
     assert y.shape[0] == 32, "Batch size"
     assert len(x.shape[1:]) == 3, "RGB images"
     assert y.shape[1] == 27, "Number of attributes"
-    def i(a):
+
+    def identity(a):
         return a
-    ms = MarketSequence("market.h5", 16, train=True, preprocess=(i, i))
+    
+    ms = MarketSequence("market.h5", 16, train=True, preprocess=(identity, identity))
     batch = ms[2]
     x, y = batch
     assert x.shape[0] == 16, "Batch size"
