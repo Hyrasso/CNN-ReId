@@ -4,3 +4,13 @@ En utilisant tensorflow.keras implémenter l’algorithme de ré-identification 
 - Augmenter les données du dataset lors de l’apprentissage selon le protocole décrit en page 7 de l’article (“Randomly cropping and horizontal flipping are applied on the input images during training.”)
 - Implémenter un système permettant de comparer 2 vecteurs de features. (La distance euclidienne est un bon point de départ.
 - Bonus: Implémenter le module de re-pondération des attributs “Attributes Re-Weighting”
+
+# Setup
+
+Get Market-1501 dataset at http://www.liangzheng.com.cn/Project/project_reid.html, put all images in Market-1501 directory
+
+TODO: requirements file
+
+- train script for attributes only
+- train script for reId
+- notebooks for results (+training)
