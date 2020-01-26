@@ -39,20 +39,21 @@ def get_models(n_person: int=1501, n_attributes: int=27) -> Tuple[Model, Model, 
     # create the base pre-trained model
     base_model = ResNet50(input_shape=(128, 64, 3), pooling="avg", weights='imagenet',include_top=False)(input_tensor)
 
-    attribute_layer = Dense(n_attributes, activation="sigmoid")(base_model)
+    attribute_layer = Dense(n_attributes, activation="sigmoid", name="attributes")(base_model)
+    # attributes reweighting
+    attributes_weight = Dense(n_attributes, activation="sigmoid")(attribute_layer)
+    reweighted_attribute = Multiply()([attribute_layer, attributes_weight])
+
     # Fully connected -> 512
     # batch norm
     # dropout
     # relu
-    attributes_weight = Dense(n_attributes, activation="sigmoid")(attribute_layer)
-    reweighted_attribute = Multiply()([attribute_layer, attributes_weight])
-
     id_layer = Dense(512, activation="relu")(base_model)
     id_layer = BatchNormalization()(id_layer)
     id_layer = Dropout(rate=0.5)(id_layer)
-    id_layer = Concatenate(axis=-1, name="image_features_concat")([reweighted_attribute, id_layer])
+    id_layer = Concatenate(axis=-1, name="image_features")([reweighted_attribute, id_layer])
 
-    training_id_layer = Dense(n_person, activation="softmax")(id_layer)
+    training_id_layer = Dense(n_person, activation="softmax", name="ids")(id_layer)
 
     attribute_model = Model(input_tensor, attribute_layer)
     person_id_model = Model(input_tensor, id_layer)
