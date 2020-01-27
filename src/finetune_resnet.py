@@ -28,7 +28,7 @@ def preprocess_labels(array):
     array[:, 1:] = array[:, 1:] - 1 # 1-2 to binary
     return array
 
-def get_models(n_person: int=1501, n_attributes: int=27) -> Tuple[Model, Model, Model]:
+def get_models(n_person: int=751, n_attributes: int=27) -> Tuple[Model, Model, Model]:
     """ Returns attribute prediction model, id prediction model and embedding model 
     
     embedding model is the id prediction model without the last classification layer
