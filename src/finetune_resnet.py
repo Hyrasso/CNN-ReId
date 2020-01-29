@@ -88,17 +88,49 @@ def market_attribute_accuracy(y_true, y_pred):
     # print(acc, acc_down_color, acc_top_color)
     return acc * 9/11 + acc_down_color * 1/11 + acc_top_color * 1/11
 
+def euclidian_dist(a: np.ndarray, b: float) -> np.ndarray:
+    # L2 norm is used to compute euclidian distance
+    # sum(xi^2)^0.5
+    return np.linalg.norm(b - a, axis=-1)
+
+def cmc_accuracy(features, ids, k=5, dist=euclidian_dist):
+    res = 0
+    for i, f in enumerate(features):
+        # number of other images that have same id
+        n_ids = len(ids[ids[i] == ids]) - 1
+        dists = dist(features, f)
+        # k + n closest images
+        # skip 1 because the closeset is itself
+        topk = ids[dists.argsort()][1: k + n_ids]
+        # top k accuracy -> 1 if right id in top k
+        # top k accuracy for n right ids:
+        # 1 if right id in top k + n
+        # divided by n
+        res += len(topk[topk == ids[i]]) / n_ids
+    return res / len(features)
+
 # def i(a):return a
 if __name__ == "__main__":
-    train_ms = MarketSequence("Market-1501/market.h5", 128, preprocess=(preprocess_images, preprocess_labels))
-    # TODO: callbacks
-    model, _, _ = get_models(n_attributes=26)
-    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy", market_attribute_accuracy])
-    # model.summary()
-    # test_ms = MarketSequence("market.h5", 1024, train=False, preprocess=(resize_preprocess, preprocess_labels))
-    hist = model.fit(preprocess_images(np.array(train_ms.x)), preprocess_labels(np.array(train_ms.y)), batch_size=32, validation_split=0.2)
-    # hist = model.fit_generator(train_ms, epochs=1)
-    # model.fit(*train_ms[0], batch_size=16)
-    # print(model.evaluate(*test_ms[0]))
-    print(hist.history)
+    # train_ms = MarketSequence("Market-1501/market.h5", 128, preprocess=(preprocess_images, preprocess_labels))
+    # # TODO: callbacks
+    # model, _, _ = get_models(n_attributes=26)
+    # model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy", market_attribute_accuracy])
+    # # model.summary()
+    # # test_ms = MarketSequence("market.h5", 1024, train=False, preprocess=(resize_preprocess, preprocess_labels))
+    # hist = model.fit(preprocess_images(np.array(train_ms.x)), preprocess_labels(np.array(train_ms.y)), batch_size=32, validation_split=0.2)
+    # # hist = model.fit_generator(train_ms, epochs=1)
+    # # model.fit(*train_ms[0], batch_size=16)
+    # # print(model.evaluate(*test_ms[0]))
+    # print(hist.history)
     # model.save("model_attr.h5")
+
+    preds = np.array([
+        [0, 0],
+        [0, 0.1],
+        [1.5, 0],
+        [2, 0]
+    ])
+    ids = np.array([
+        0, 0, 1, 1
+    ])
+    print(cmc_accuracy(preds, ids, k=1))
