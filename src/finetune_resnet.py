@@ -3,6 +3,7 @@ from keras.applications.resnet50 import ResNet50, preprocess_input
 from keras import Input, Model
 from keras.metrics import binary_accuracy, categorical_accuracy
 from keras.layers import Dense, Lambda, MaxPooling2D, Flatten, Concatenate, BatchNormalization, Dropout, Multiply
+from keras.preprocessing.image import ImageDataGenerator
 import keras.backend as K
 import numpy as np
 from utils.marketsequence import MarketSequence
@@ -10,15 +11,7 @@ from utils.preprocess import resize
 from typing import Tuple
 
 def preprocess_images(array):
-    # TODO: resize to 224, 224, 3, from 128, 64, 3
-    # array = resize(array, (224, 224, 3))
-
-    # r = K.resize_images(img, 224 / 128, 224 / 64, data_format="channels_last", interpolation="bilinear")
-    # assert array[0].shape == (224, 224, 3)
-    # array = resize_images(array, 224 / array.shape[1], 224 / array.shape[2], "channels_last", interpolation="bilinear")
-    # preprocess
     array = preprocess_input(array)
-
     return array
 
 def preprocess_labels(array):
@@ -44,10 +37,6 @@ def get_models(n_person: int=751, n_attributes: int=27) -> Tuple[Model, Model, M
     attributes_weight = Dense(n_attributes, activation="sigmoid")(attribute_layer)
     reweighted_attribute = Multiply()([attribute_layer, attributes_weight])
 
-    # Fully connected -> 512
-    # batch norm
-    # dropout
-    # relu
     id_layer = Dense(512, activation="relu")(base_model)
     id_layer = BatchNormalization()(id_layer)
     id_layer = Dropout(rate=0.5)(id_layer)
@@ -108,6 +97,16 @@ def cmc_accuracy(features, ids, k=5, dist=euclidian_dist):
         # divided by n
         res += len(topk[topk == ids[i]]) / n_ids
     return res / len(features)
+
+def marketDataGenerator(images, **kwargs):
+    """ Return generator function that uses ImageDataGenerator """
+    img_gen = ImageDataGenerator(**kwargs)
+    img_gen.fit(images)
+    def marketDataGenerator(images, attributes, ids, batch_size, **kwargs):
+        """ Like ImageDataGenerator.flow for multiple outputs """
+        for xs, *ys in img_gen.flow((images, [attributes, ids]), batch_size=batch_size, **kwargs):
+            yield xs, [*ys]
+    return marketDataGenerator
 
 # def i(a):return a
 if __name__ == "__main__":

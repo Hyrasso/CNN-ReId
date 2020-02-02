@@ -1,0 +1,1 @@
+Unzip all the images here and use market2h5.py to generate market.h5 file used for training.

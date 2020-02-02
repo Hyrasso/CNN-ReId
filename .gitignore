@@ -1,5 +1,6 @@
-Market-1501
 .mypy_cache
 .vscode
 *.h5
 __pycache__
+*.db
+*.jpg
