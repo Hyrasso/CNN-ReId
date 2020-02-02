@@ -5,12 +5,4 @@ En utilisant tensorflow.keras implémenter l’algorithme de ré-identification 
 - Implémenter un système permettant de comparer 2 vecteurs de features. (La distance euclidienne est un bon point de départ.
 - Bonus: Implémenter le module de re-pondération des attributs “Attributes Re-Weighting”
 
-# Setup
-
-Get Market-1501 dataset at http://www.liangzheng.com.cn/Project/project_reid.html, put all images in Market-1501 directory
-
-TODO: requirements file
-
-- train script for attributes only
-- train script for reId
-- notebooks for results (+training)
+Entrainement pour les attributs uniquement: `attributes.ipynb`, entrainement pour le modèle complet du papier: `id-preditction.ipynb`. Evaluation du modele complet sur les données de test: `evaluation.ipynb`.
